@@ -52,9 +52,9 @@ export function InputForm({ disabled, onSubmit }: Props) {
           disabled={disabled || !query.trim()}
           className="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-900/30 transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {disabled ? 'Running…' : 'Run diagnostic'}
+          {disabled ? 'Working…' : 'Check my ranking'}
         </button>
-        <p className="text-xs text-zinc-500">Compares visibility across three model endpoints.</p>
+        <p className="text-xs text-zinc-500">Looks at three popular answer engines at once.</p>
       </div>
     </form>
   )
