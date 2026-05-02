@@ -7,9 +7,9 @@ export const chatGroq = async (
     model = "llama-3.3-70b-versatile",
 ) => {
     const response = await groqClient.chat.completions.create({
-        model,
+        model:"openai/gpt-oss-120b",
         messages: [{ role: "user", content: prompt }],
         response_format: responseFormat,
     });
     return response.choices[0].message.content;
-};
+}; 

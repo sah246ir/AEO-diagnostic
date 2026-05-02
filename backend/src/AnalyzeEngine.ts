@@ -3,6 +3,13 @@ import { generateRecommendationAnalyzerPrompt, RecommendationAnalyzerResponseTyp
 import { generateReccomendationPrompt, ReccomendationPromptResponseType, ReccomendationPromptSchema } from "./prompts/ReccomendationPrompt.js";
 import { sendSseEvent } from "./sse.js";
 
+const getRankScore = (rank: number | null) => {
+    if (rank === 1) return 1.0
+    if (rank === 2) return 0.8
+    if (rank === 3) return 0.6
+    if (rank === 4 || rank === 5) return 0.4
+    return 0
+  }
 const LLM_RUNNERS = [
     { llm: "llama-3.3", groqModel: "llama-3.3-70b-versatile" },
     { llm: "mixtral-8x7b", groqModel: "mixtral-8x7b-32768" },
@@ -37,6 +44,8 @@ const processReccomendation = async (query: string, userProduct: string) => {
         throw new Error("Empty LLM response (analyzer)")
     }
     const analyzerDataParsed = JSON.parse(analyzerData) as RecommendationAnalyzerResponseType
+    const visibilityScore = (analyzerDataParsed.visibility.reduce((sum, m) => sum + getRankScore(m.rank ?? null), 0) / LLM_RUNNERS.length) * 100
+    analyzerDataParsed.visibility_score = visibilityScore
     sendSseEvent("analyzer_result", analyzerDataParsed)
     return analyzerDataParsed
 }
