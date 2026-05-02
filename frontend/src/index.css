@@ -1,8 +1,5 @@
 @import 'tailwindcss';
 
-@source '../index.html';
-@source './**/*.{js,ts,jsx,tsx}';
-
 @layer base {
   html {
     @apply text-zinc-300 antialiased;
