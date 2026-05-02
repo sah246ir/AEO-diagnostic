@@ -1,0 +1,15 @@
+@import 'tailwindcss';
+
+@source '../index.html';
+@source './**/*.{js,ts,jsx,tsx}';
+
+@layer base {
+  html {
+    @apply text-zinc-300 antialiased;
+    color-scheme: dark;
+  }
+
+  body {
+    @apply m-0 min-h-screen bg-zinc-950 font-sans text-zinc-300 antialiased;
+  }
+}
