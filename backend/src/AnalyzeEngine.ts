@@ -3,38 +3,42 @@ import { generateRecommendationAnalyzerPrompt, RecommendationAnalyzerResponseTyp
 import { generateReccomendationPrompt, ReccomendationPromptResponseType, ReccomendationPromptSchema } from "./prompts/ReccomendationPrompt.js";
 import { sendSseEvent } from "./sse.js";
 
+const LLM_RUNNERS = [
+    { llm: "llama-3.3", groqModel: "llama-3.3-70b-versatile" },
+    { llm: "mixtral-8x7b", groqModel: "mixtral-8x7b-32768" },
+    { llm: "gemma-2", groqModel: "gemma2-9b-it" },
+] as const
+
 const processReccomendation = async (query: string, userProduct: string) => {
     const reccomendations = await Promise.all(
-        [
-            {name: "groq", chat: chatGroq},
-            {name: "gemini", chat: chatGroq},
-            {name: "anthropic", chat: chatGroq},
-        ].map(async (llm)=>{
-            const data = await llm.chat(
+        LLM_RUNNERS.map(async ({ llm, groqModel }) => {
+            const data = await chatGroq(
                 generateReccomendationPrompt(query),
-                ReccomendationPromptSchema
+                ReccomendationPromptSchema,
+                groqModel,
             )
             if (data === null) {
-                sendSseEvent("llm_error", {message: "Empty LLM response",llm: llm.name })
-                throw new Error("Empty LLM response")
+                sendSseEvent("llm_error", { llm, message: "Empty LLM response" })
+                throw new Error(`Empty LLM response (${llm})`)
             }
             const reccomendationData = JSON.parse(data) as ReccomendationPromptResponseType
-            sendSseEvent("llm_complete", {llm: llm.name, data: reccomendationData})
-            return {llm: llm.name, data: reccomendationData}
-        })
+            sendSseEvent("llm_result", { llm, data: reccomendationData })
+            return { llm, data: reccomendationData }
+        }),
     )
-    sendSseEvent("analyze_started", {reccomendations: reccomendations})
+
     const analyzerData = await chatGroq(
         generateRecommendationAnalyzerPrompt(query, reccomendations, userProduct),
-        RecommendationAnalyzerSchema
+        RecommendationAnalyzerSchema,
+        "llama-3.3-70b-versatile",
     )
     if (analyzerData === null) {
-        sendSseEvent("analyzer_error", {message: "Empty LLM response"})
-        throw new Error("Empty LLM response")
+        sendSseEvent("analyzer_error", { message: "Empty LLM response" })
+        throw new Error("Empty LLM response (analyzer)")
     }
     const analyzerDataParsed = JSON.parse(analyzerData) as RecommendationAnalyzerResponseType
-    sendSseEvent("analyze_complete", {data: analyzerDataParsed})
-    return JSON.parse(analyzerData) as RecommendationAnalyzerResponseType
+    sendSseEvent("analyzer_result", analyzerDataParsed)
+    return analyzerDataParsed
 }
 
 export { processReccomendation }

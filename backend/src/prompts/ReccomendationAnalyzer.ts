@@ -42,7 +42,7 @@ export const generateRecommendationAnalyzerPrompt = (
     "visibility": [
       { "llm": "...", "found": true/false, "rank": 1 or null, "reason": "..." }
     ],
-    "visibility_score": "X of Y models",
+    "visibility_score": 0,
     "competitor_insights": [
       { "name": "...", "edge": "what they do better" }
     ],
@@ -59,7 +59,7 @@ export const RecommendationAnalyzerSchema:ResponseFormatJSONSchema = {
             type: "object",
             properties: {
                 visibility: { type: "array", items: { type: "object", properties: { llm: { type: "string" }, found: { type: "boolean" }, rank: { type: "number" }, reason: { type: "string" } } } },
-                visibility_score: { type: "string" },
+                visibility_score: { type: "number" },
                 competitor_insights: { type: "array", items: { type: "object", properties: { name: { type: "string" }, edge: { type: "string" } } } },
                 recommendation: { type: "string" }
             }
