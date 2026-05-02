@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "tsx src/index.ts",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [],
@@ -17,5 +17,11 @@
     "@types/node": "^22.15.3",
     "tsx": "^4.19.4",
     "typescript": "~6.0.2"
+  },
+  "dependencies": {
+    "body-parser": "^2.2.2",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "openai": "^6.35.0"
   }
 }
