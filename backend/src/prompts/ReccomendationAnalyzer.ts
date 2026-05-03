@@ -63,6 +63,7 @@ export const generateRecommendationAnalyzerPrompt = (
     - do not repeat the same idea across sections
     - each point must be unique
     - keep each bullet under 10 words
+    - the reason for competitor_dominance should mention what this company is doing better than me
     
     Return JSON only.
     `;
