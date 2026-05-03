@@ -1,4 +1,5 @@
 import type { DerivedSummary, DiagnosticPayload } from '../../types'
+import { MODELS } from '../../config'
 import { VerdictRing } from './VerdictRing'
 
 function scoreHue(score: number): string {
@@ -25,19 +26,21 @@ function BuyerCareEmphasis({ text }: { text: string }) {
   const trimmed = text.trim()
   const segments = trimmed.split(/\s*\+\s*/).map((s) => s.trim()).filter(Boolean)
   if (segments.length <= 1) {
-    return <strong className="font-semibold text-zinc-100">{trimmed}</strong>
+    return <span className="text-zinc-100">{trimmed}</span>
   }
   return (
-    <span className="leading-snug">
+    <span className="leading-snug text-zinc-100">
       {segments.map((seg, i) => (
         <span key={i}>
-          {i > 0 ? <span className="mx-1 font-normal text-zinc-500">+</span> : null}
-          <strong className="font-semibold text-zinc-100">{seg}</strong>
+          {i > 0 ? <span className="mx-1 text-zinc-500">+</span> : null}
+          <span>{seg}</span>
         </span>
       ))}
     </span>
   )
 }
+
+const HIGH_TIER_VERDICT_PREFIX = 'You\u2019re visible, but not dominating this search.'
 
 type Props = {
   diagnostic: DiagnosticPayload | null
@@ -48,46 +51,81 @@ type Props = {
 export function VerdictPanel({ diagnostic, busy, liveSummary }: Props) {
   const score = diagnostic?.score ?? liveSummary.score
   const hue = scoreHue(score)
+  const modelCount = MODELS.length
+  const verdictHead = diagnostic ? verdictHeadline(diagnostic.verdict) : ''
+  const showVerdictEmoji = verdictHead.startsWith(HIGH_TIER_VERDICT_PREFIX)
 
   return (
     <section className="w-full rounded-2xl border border-zinc-800/90 bg-zinc-900/50 px-5 py-6 md:px-8 md:py-8">
       {diagnostic ? (
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-10">
           <VerdictRing score={diagnostic.score} />
-          <div className="min-w-0 flex-1 space-y-4">
-            <div className="flex flex-wrap items-end gap-x-3 gap-y-2">
-              <span className={`text-5xl font-bold tabular-nums leading-none md:text-6xl ${hue}`}>
-                {diagnostic.score}
-              </span>
-              <span className="pb-1 text-zinc-500" aria-hidden>
-                →
-              </span>
-              <p className="max-w-2xl pb-1 text-lg font-medium leading-snug text-zinc-100 md:text-xl">
-                {verdictHeadline(diagnostic.verdict)}
+          <div className="min-w-0 flex-1 space-y-5">
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:gap-8">
+              <div className="flex shrink-0 flex-col gap-2">
+                <span className={`text-7xl font-bold tabular-nums leading-none tracking-tight md:text-8xl ${hue}`}>
+                  {diagnostic.score}
+                </span>
+                <p className="max-w-56 text-xs leading-relaxed text-zinc-500">
+                  <span className="mr-1.5" aria-hidden>
+                    👉
+                  </span>
+                  <strong className="font-semibold text-zinc-300">Confidence: Medium</strong>
+                  <span>
+                    {' '}
+                    · Based on {modelCount} models
+                  </span>
+                </p>
+              </div>
+              <p className="min-w-0 flex-1 text-lg font-medium leading-snug text-zinc-100 md:pt-1 md:text-xl">
+                {showVerdictEmoji ? (
+                  <>
+                    <span className="mr-1.5" aria-hidden>
+                      👉
+                    </span>
+                    {verdictHead}
+                  </>
+                ) : (
+                  verdictHead
+                )}
               </p>
             </div>
-            <p className="text-sm leading-relaxed text-zinc-400 md:text-base">
-              <span className="font-medium text-zinc-300">What buyers care about: </span>
-              <BuyerCareEmphasis text={diagnostic.primary_purchase_driver.driver} />
-              <span className="text-zinc-500">
-                {' '}
-                ({confidencePercent(diagnostic.primary_purchase_driver.confidence)}%)
-              </span>
-            </p>
+            <div className="space-y-3 border-t border-zinc-800/60 pt-5 text-sm leading-relaxed text-zinc-400 md:text-base">
+              <p className="leading-relaxed">
+                <strong className="font-semibold text-zinc-200">What buyers care about:</strong>{' '}
+                <BuyerCareEmphasis text={diagnostic.primary_purchase_driver.driver} />
+              </p>
+              <p className="leading-relaxed text-zinc-500">
+                → Appears in{' '}
+                <strong className="font-semibold text-zinc-300">
+                  {confidencePercent(diagnostic.primary_purchase_driver.confidence)}%
+                </strong>{' '}
+                of recommendations
+              </p>
+            </div>
           </div>
         </div>
       ) : busy ? (
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-10">
           <VerdictRing score={liveSummary.score} />
-          <div className="min-w-0 flex-1 space-y-3">
-            <div className="flex flex-wrap items-end gap-x-3 gap-y-2">
-              <span className={`text-5xl font-bold tabular-nums leading-none md:text-6xl ${hue}`}>
-                {liveSummary.score}
-              </span>
-              <span className="pb-1 text-zinc-500" aria-hidden>
-                →
-              </span>
-              <p className="max-w-xl pb-1 text-base font-medium leading-snug text-zinc-300">
+          <div className="min-w-0 flex-1 space-y-4">
+            <div className="flex flex-col gap-3 md:flex-row md:items-start md:gap-8">
+              <div className="flex shrink-0 flex-col gap-2">
+                <span className={`text-7xl font-bold tabular-nums leading-none tracking-tight md:text-8xl ${hue}`}>
+                  {liveSummary.score}
+                </span>
+                <p className="max-w-56 text-xs leading-relaxed text-zinc-500">
+                  <span className="mr-1.5" aria-hidden>
+                    👉
+                  </span>
+                  <strong className="font-semibold text-zinc-300">Confidence: Medium</strong>
+                  <span>
+                    {' '}
+                    · Based on {modelCount} models
+                  </span>
+                </p>
+              </div>
+              <p className="min-w-0 flex-1 text-base font-medium leading-snug text-zinc-300 md:pt-1">
                 Partial score—still collecting answers.
               </p>
             </div>

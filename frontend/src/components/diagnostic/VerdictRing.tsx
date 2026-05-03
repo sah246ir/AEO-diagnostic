@@ -32,7 +32,7 @@ export function VerdictRing({ score }: Props) {
         />
       </svg>
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-        <span className={`text-2xl font-bold tabular-nums ${scoreHue(score)}`}>{score}</span>
+        <span className={`text-[2rem] font-bold tabular-nums leading-none ${scoreHue(score)}`}>{score}</span>
         <span className="text-[9px] font-medium uppercase tracking-wider text-zinc-500">Score</span>
       </div>
     </div>

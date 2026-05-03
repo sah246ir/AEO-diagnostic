@@ -86,7 +86,7 @@ export function buildSummaryRecord(
 }
 
 function verdictFromScore(score: number, foundInModels: number): string {
-  if (score >= 70) return 'You usually show up near the top for this search.'
+  if (score >= 70) return 'You\u2019re visible, but not dominating this search.'
   if (score >= 40) return 'You show up sometimes, but not in a steady way.'
   if (foundInModels > 0) return 'You get mentioned, but often not near the top.'
   return 'You are not in these answer lists yet.'
@@ -171,10 +171,7 @@ function buildCompetitiveStory(analyzer: AnalyzerResponse): string {
 function buildVerdict(analyzer: AnalyzerResponse): string {
   const score = Math.round(Math.min(100, Math.max(0, analyzer.visibility_score)))
   const foundInModels = analyzer.visibility.filter((v) => v.rank != null).length
-  const base = verdictFromScore(score, foundInModels)
-  const driver = analyzer.primary_purchase_driver.driver.trim()
-  if (!driver) return base
-  return `${base} Buyers keep coming back to: ${driver}.`
+  return verdictFromScore(score, foundInModels)
 }
 
 export type ComputeDiagnosticInput = {
