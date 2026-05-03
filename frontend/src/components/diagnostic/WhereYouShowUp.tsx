@@ -1,3 +1,4 @@
+import { MODEL_LABEL_LINE } from '../../config'
 import type { ModelStrength } from '../../types'
 
 export type BreakdownRow = {
@@ -29,6 +30,7 @@ export function WhereYouShowUp({ rows }: Props) {
   return (
     <section className="w-full">
       <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Where you show up</h2>
+      <p className="mt-1.5 text-[11px] leading-snug text-zinc-600">{MODEL_LABEL_LINE}</p>
       <div className="mt-3 overflow-hidden rounded-lg border border-zinc-800/90 bg-zinc-950/50">
         <table className="w-full text-left text-sm">
           <thead>

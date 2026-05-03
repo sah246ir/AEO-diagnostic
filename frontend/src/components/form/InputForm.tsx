@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { MODEL_LABEL_LINE, MODELS } from '../../config'
 
 type Props = {
   disabled: boolean
@@ -54,7 +55,9 @@ export function InputForm({ disabled, onSubmit }: Props) {
         >
           {disabled ? 'Working…' : 'Check my ranking'}
         </button>
-        <p className="text-xs text-zinc-500">Looks at three popular answer engines at once.</p>
+        <p className="text-xs text-zinc-500">
+          Runs the same check across {MODELS.length} models: {MODEL_LABEL_LINE}.
+        </p>
       </div>
     </form>
   )

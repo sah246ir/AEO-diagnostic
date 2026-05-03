@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { MODELS } from '../../config'
 import type { DiagnosticPayload } from '../../types'
+import { clip, pickTop, splitTextIntoSentences } from '../../utils/clean'
 
 function GridCard({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -9,102 +10,6 @@ function GridCard({ title, children }: { title: string; children: ReactNode }) {
       <div className="mt-5 min-h-0 flex-1">{children}</div>
     </div>
   )
-}
-
-function normKey(s: string): string {
-  return s.toLowerCase().replace(/\s+/g, ' ').trim()
-}
-
-function isNearDuplicate(a: string, b: string): boolean {
-  const na = normKey(a)
-  const nb = normKey(b)
-  if (!na || !nb) return false
-  if (na === nb) return true
-  const short = na.length <= nb.length ? na : nb
-  const long = na.length > nb.length ? na : nb
-  if (short.length < 14) return false
-  if (long.includes(short) && short.length / long.length > 0.45) return true
-  return false
-}
-
-function fingerprintSet(strings: string[]): Set<string> {
-  const set = new Set<string>()
-  for (const s of strings) {
-    const n = normKey(s)
-    if (n.length > 6) set.add(n)
-  }
-  return set
-}
-
-/** Drop items that duplicate another item in the same list (order preserved). */
-function dedupeWithinList(items: string[]): string[] {
-  const out: string[] = []
-  const seenNorm = new Set<string>()
-  for (const raw of items) {
-    const t = raw.trim()
-    if (!t) continue
-    let dup = false
-    for (const ex of seenNorm) {
-      if (isNearDuplicate(t, ex)) {
-        dup = true
-        break
-      }
-    }
-    if (dup) continue
-    seenNorm.add(normKey(t))
-    out.push(t)
-  }
-  return out
-}
-
-/** Prefer first-seen strings; skip items that duplicate `seed` or each other. */
-function takeUniqueUpTo(items: string[], seed: Set<string>, max: number): string[] {
-  const out: string[] = []
-  const local = new Set<string>(seed)
-  for (const raw of items) {
-    const t = raw.trim()
-    if (!t) continue
-    const n = normKey(t)
-    let dup = false
-    for (const ex of local) {
-      if (isNearDuplicate(t, ex)) {
-        dup = true
-        break
-      }
-    }
-    if (dup) continue
-    local.add(n)
-    out.push(t)
-    if (out.length >= max) break
-  }
-  return out
-}
-
-const DISPLAY_MAX_LEN = 280
-
-function clip(s: string): string {
-  const t = s.trim()
-  if (t.length <= DISPLAY_MAX_LEN) return t
-  return `${t.slice(0, DISPLAY_MAX_LEN - 1).trim()}…`
-}
-
-/** Split `reason` into up to `max` segments without rewriting words. */
-function reasonSegments(reason: string, max: number): string[] {
-  const t = reason.trim()
-  if (!t) return []
-  const byNl = t
-    .split(/\n+/)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 4)
-  if (byNl.length >= 2) return byNl.slice(0, max)
-  const bySentence = t
-    .split(/(?<=[.!?])\s+/)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 8)
-  if (bySentence.length >= 2) return bySentence.slice(0, max)
-  const semi = t.split(/;\s+/).map((s) => s.trim()).filter((s) => s.length > 8)
-  if (semi.length >= 2) return semi.slice(0, max)
-  return t ? [t] : []
 }
 
 type Props = {
@@ -116,26 +21,11 @@ export function InsightGrid({ diagnostic }: Props) {
   const nModels = MODELS.length
   const top = diagnostic.competitor_dominance[0]
 
-  const gapFingerprints = fingerprintSet([gap.market_focus, gap.product_focus, gap.gap])
-  const problems = takeUniqueUpTo(diagnostic.insights.problems, gapFingerprints, 3).map(clip)
-  const seenAfterProblems = new Set(gapFingerprints)
-  for (const p of problems) seenAfterProblems.add(normKey(p))
-
-  const fixes = takeUniqueUpTo(diagnostic.insights.recommendations, seenAfterProblems, 3).map(clip)
-  const seenAfterFixes = new Set(seenAfterProblems)
-  for (const f of fixes) seenAfterFixes.add(normKey(f))
-
-  const rawReasonParts = top ? dedupeWithinList(reasonSegments(top.reason, 5)) : []
-  const reasons = takeUniqueUpTo(rawReasonParts, seenAfterFixes, 3).map(clip)
-  const seenAfterCompetitor = new Set(seenAfterFixes)
-  for (const r of reasons) seenAfterCompetitor.add(normKey(r))
-
-  const keyDriversRaw = diagnostic.key_drivers.slice(0, 8)
-  const chips = takeUniqueUpTo(keyDriversRaw, seenAfterCompetitor, 3).map(clip)
-  const seenAfterChips = new Set(seenAfterCompetitor)
-  for (const c of chips) seenAfterChips.add(normKey(c))
-
-  const tries = takeUniqueUpTo(diagnostic.improved_bullets, seenAfterChips, 3).map(clip)
+  const problems = pickTop(diagnostic.insights.problems, 3)
+  const fixes = pickTop(diagnostic.insights.recommendations, 3)
+  const reasons = top ? pickTop(splitTextIntoSentences(top.reason, 5), 3) : []
+  const chips = pickTop(diagnostic.key_drivers, 3)
+  const tries = pickTop(diagnostic.improved_bullets, 3)
 
   const freqX = top ? Math.min(top.frequency, nModels) : 0
 
@@ -164,7 +54,7 @@ export function InsightGrid({ diagnostic }: Props) {
         </p>
       </GridCard>
 
-      <GridCard title="Why you're losing">
+      <GridCard title={diagnostic.score >= 70 ? 'Where you can improve further' : "Why you're losing"}>
         {problems.length ? (
           <ul className="list-disc space-y-3 pl-4 text-sm leading-relaxed text-zinc-300">
             {problems.map((p, i) => (

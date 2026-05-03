@@ -19,8 +19,8 @@ type Props = {
 
 export function DiagnosticView({ diagnostic, models, summary, busy, activityLog }: Props) {
   const breakdownRows: BreakdownRow[] = useMemo(() => {
-    return MODELS.map((m, i) => {
-      const slot = models[i]!
+    return MODELS.map((m) => {
+      const slot = models.find((s) => s.llm === m.id)
       const derived = summary.summary[m.id]
       const finalRow = diagnostic?.summary[m.id]
       const rank = finalRow?.rank ?? derived?.rank ?? null
@@ -28,7 +28,7 @@ export function DiagnosticView({ diagnostic, models, summary, busy, activityLog 
       return {
         id: m.id,
         label: m.label,
-        loading: slot.status === 'loading',
+        loading: slot?.status === 'loading',
         rank,
         strength,
       }

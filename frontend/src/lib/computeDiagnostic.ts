@@ -12,27 +12,27 @@ import type {
 
 const MODEL_IDS = MODELS.map((m) => m.id)
 
-export { normalizeAnalyzerPayload } from './parsers/analyzer'
+export { parseAnalyzerPayload } from './parsers/analyzer'
 
-function normalize(s: string): string {
-  return s.toLowerCase().trim()
+function normalizeText(value: string): string {
+  return value.toLowerCase().trim()
 }
 
 /** Product match in listing name, reason, or keyword overlap (ranked by listing order). */
 export function findUserRankInListings(results: ListingResult[], userProduct: string): number | null {
-  const p = normalize(userProduct)
+  const p = normalizeText(userProduct)
   if (!p || !results?.length) return null
   const tokens = p.split(/\s+/).filter((w) => w.length > 1)
   const significant = tokens.filter((w) => w.length > 2)
 
   for (const r of results) {
-    const name = normalize(r.name)
-    const reason = normalize(r.reason)
+    const name = normalizeText(r.name)
+    const reason = normalizeText(r.reason)
     const blob = `${name} ${reason}`
     if (name.includes(p)) return r.rank
     if (significant.length && significant.every((t) => blob.includes(t))) return r.rank
     if (tokens.length >= 2 && tokens.every((t) => blob.includes(t))) return r.rank
-    const kw = r.keywords.map((k: string) => normalize(k))
+    const kw = r.keywords.map((k: string) => normalizeText(k))
     if (significant.some((t) => kw.some((k: string) => k.includes(t) || t.includes(k)))) return r.rank
   }
   return null
@@ -76,7 +76,9 @@ export function buildSummaryRecord(
   for (const id of MODEL_IDS) {
     const row = recommendations.find((r) => r.llm === id)
     const rankFromListings = row ? findUserRankInListings(row.data.results, userProduct) : null
-    const vis = analyzer?.visibility.find((v) => v.llm === id || normalize(v.llm) === normalize(id))
+    const vis = analyzer?.visibility.find(
+      (v) => v.llm === id || normalizeText(v.llm) === normalizeText(id),
+    )
     const rankFromAnalyzer =
       vis != null && vis.rank != null && Number.isFinite(vis.rank) ? (vis.rank as number) : null
     const rank = rankFromListings ?? rankFromAnalyzer
@@ -86,6 +88,7 @@ export function buildSummaryRecord(
 }
 
 function verdictFromScore(score: number, foundInModels: number): string {
+  if (score >= 80) return 'You are consistently recommended across models.'
   if (score >= 70) return 'You\u2019re visible, but not dominating this search.'
   if (score >= 40) return 'You show up sometimes, but not in a steady way.'
   if (foundInModels > 0) return 'You get mentioned, but often not near the top.'
@@ -97,13 +100,13 @@ function countTopCompetitors(
   userProduct: string,
 ): Map<string, number> {
   const counts = new Map<string, number>()
-  const exclude = normalize(userProduct)
+  const exclude = normalizeText(userProduct)
   for (const { data } of recommendations) {
     for (const r of data.results) {
       if (r.rank > 3) continue
       const key = r.name.trim()
       if (!key) continue
-      if (exclude && normalize(key).includes(exclude)) continue
+      if (exclude && normalizeText(key).includes(exclude)) continue
       counts.set(key, (counts.get(key) ?? 0) + 1)
     }
   }

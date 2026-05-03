@@ -9,7 +9,7 @@ import type {
 } from '../types'
 import { initialModels, modelsLoadingState } from '../lib/sessionState'
 import { computeDiagnostic, deriveSummary, gatherDoneRecommendations } from '../lib/computeDiagnostic'
-import { normalizeAnalyzerPayload } from '../lib/parsers/analyzer'
+import { parseAnalyzerPayload } from '../lib/parsers/analyzer'
 import { parseLlmResultPayload } from '../lib/parsers/llmSsePayload'
 import { parseAnalyzeErrorMessage, parseLlmErrorPayload } from '../lib/parsers/sseErrors'
 import { useSSE } from './useSSE'
@@ -87,7 +87,7 @@ export function useAnalyzeStream() {
     const allDone = models.length > 0 && models.every((m) => m.status !== 'loading')
     if (allDone && !allModelsLineLoggedRef.current) {
       allModelsLineLoggedRef.current = true
-      pushActivity('All three answers are in. Finishing your summary…')
+      pushActivity(`All ${MODELS.length} model answers are in. Finishing your summary…`)
     }
   }, [busy, report, models, pushActivity])
 
@@ -158,7 +158,7 @@ export function useAnalyzeStream() {
       function handleAnalyzerResult(ev: MessageEvent) {
         try {
           const rawAnalyzer = JSON.parse(ev.data as string) as unknown
-          const parsedAnalyzer = normalizeAnalyzerPayload(rawAnalyzer)
+          const parsedAnalyzer = parseAnalyzerPayload(rawAnalyzer)
           if (!parsedAnalyzer) {
             setStreamError('Invalid analyzer_result payload')
             pushActivity('Analyzer returned an invalid payload.', 'warn')

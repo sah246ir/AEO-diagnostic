@@ -1,5 +1,5 @@
 import type { DerivedSummary, DiagnosticPayload } from '../../types'
-import { MODELS } from '../../config'
+import { MODEL_LABEL_LINE, MODELS } from '../../config'
 import { VerdictRing } from './VerdictRing'
 
 function scoreHue(score: number): string {
@@ -66,16 +66,19 @@ export function VerdictPanel({ diagnostic, busy, liveSummary }: Props) {
                 <span className={`text-7xl font-bold tabular-nums leading-none tracking-tight md:text-8xl ${hue}`}>
                   {diagnostic.score}
                 </span>
-                <p className="max-w-56 text-xs leading-relaxed text-zinc-500">
-                  <span className="mr-1.5" aria-hidden>
-                    👉
-                  </span>
-                  <strong className="font-semibold text-zinc-300">Confidence: Medium</strong>
-                  <span>
-                    {' '}
-                    · Based on {modelCount} models
-                  </span>
-                </p>
+                <div className="max-w-md space-y-1">
+                  <p className="text-xs leading-relaxed text-zinc-500">
+                    <span className="mr-1.5" aria-hidden>
+                      👉
+                    </span>
+                    <strong className="font-semibold text-zinc-300">Confidence: Medium</strong>
+                    <span>
+                      {' '}
+                      · Based on {modelCount} models
+                    </span>
+                  </p>
+                  <p className="text-[11px] leading-snug text-zinc-600">{MODEL_LABEL_LINE}</p>
+                </div>
               </div>
               <p className="min-w-0 flex-1 text-lg font-medium leading-snug text-zinc-100 md:pt-1 md:text-xl">
                 {showVerdictEmoji ? (
@@ -114,16 +117,19 @@ export function VerdictPanel({ diagnostic, busy, liveSummary }: Props) {
                 <span className={`text-7xl font-bold tabular-nums leading-none tracking-tight md:text-8xl ${hue}`}>
                   {liveSummary.score}
                 </span>
-                <p className="max-w-56 text-xs leading-relaxed text-zinc-500">
-                  <span className="mr-1.5" aria-hidden>
-                    👉
-                  </span>
-                  <strong className="font-semibold text-zinc-300">Confidence: Medium</strong>
-                  <span>
-                    {' '}
-                    · Based on {modelCount} models
-                  </span>
-                </p>
+                <div className="max-w-md space-y-1">
+                  <p className="text-xs leading-relaxed text-zinc-500">
+                    <span className="mr-1.5" aria-hidden>
+                      👉
+                    </span>
+                    <strong className="font-semibold text-zinc-300">Confidence: Medium</strong>
+                    <span>
+                      {' '}
+                      · Based on {modelCount} models
+                    </span>
+                  </p>
+                  <p className="text-[11px] leading-snug text-zinc-600">{MODEL_LABEL_LINE}</p>
+                </div>
               </div>
               <p className="min-w-0 flex-1 text-base font-medium leading-snug text-zinc-300 md:pt-1">
                 Partial score—still collecting answers.
