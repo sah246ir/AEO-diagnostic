@@ -30,7 +30,7 @@ export function InsightGrid({ diagnostic }: Props) {
   const freqX = top ? Math.min(top.frequency, nModels) : 0
 
   return (
-    <div className="grid w-full grid-cols-1 gap-6 md:grid-cols-2 md:gap-7 lg:grid-cols-3 lg:gap-7">
+    <div className="grid w-full grid-cols-1 gap-6 md:grid-cols-2 md:gap-7 ">
       <GridCard title="What you're missing">
         <div className="space-y-5 text-sm leading-relaxed text-zinc-300">
           <p>

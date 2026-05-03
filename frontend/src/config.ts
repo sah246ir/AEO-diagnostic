@@ -2,6 +2,7 @@
 export const MODELS = [
   { id: 'groq', label: 'Groq (GPT-OSS 120B)' },
   { id: 'openai', label: 'OpenAI (GPT-4o mini)' },
+  { id: 'claude', label: 'Claude (Claude 3.5 Sonnet)' },
 ] as const
 
 /** Same order as the “Where you show up” table and SSE payloads—use for any UI that must stay in sync. */

@@ -39,7 +39,7 @@ export function DiagnosticView({ diagnostic, models, summary, busy, activityLog 
     <div className="mt-10 flex w-full flex-col gap-10 md:gap-12">
       <AnalysisLiveLog entries={activityLog} streaming={busy} />
 
-      <VerdictPanel diagnostic={diagnostic} busy={busy} liveSummary={summary} />
+      <VerdictPanel diagnostic={diagnostic} busy={busy} />
 
       <WhereYouShowUp rows={breakdownRows} />
 

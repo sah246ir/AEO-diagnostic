@@ -12,9 +12,13 @@ const openaiClient = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
-const deepseekClient = new OpenAI({
-    apiKey: process.env.DEEPSEEK_API_KEY,
-    baseURL: "https://api.deepseek.com/v1",
-  });
+const geminiClient = new OpenAI({
+    apiKey: process.env.GEMINI_API_KEY,
+    baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
+}); 
+export const anthropicClient = new OpenAI({
+    apiKey: process.env.ANTHROPIC_API_KEY,
+    baseURL: "https://api.anthropic.com/v1",
+}); 
 
-export { groqClient, openaiClient, deepseekClient };
+export { groqClient, openaiClient, geminiClient };

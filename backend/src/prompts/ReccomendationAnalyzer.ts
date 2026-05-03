@@ -16,98 +16,126 @@ export const generateRecommendationAnalyzerPrompt = (
         })
     })
     return `
-    You are an e-commerce AI visibility analyst.
-    
-    Query: "${query}"
-    Target product: "${userProduct}"
-    
-    Here are AI model recommendations:
-    ${reccomendations.join("\n")}
-    
-    Your job is to analyze how the target product performs across AI-generated answers.
-    
-    IMPORTANT:
-    Write outputs in simple, clear language. Avoid jargon. Every field should be easy for a non-technical user to understand.
-    
-    ---
-    
-    Return STRICT JSON with:
-    
-    1. visibility:
-       - For each LLM:
-         { llm: "...", rank: number | null }
-    
-    ---
-    
-    2. primary_purchase_driver:
-       - dominant buying factor (1 short phrase, plain English)
-       - confidence (0–1 based on how often it appears)
-    
-    ---
-    
-    3. key_drivers:
-       - most repeated benefits or keywords across results
-       - short phrases only
-    
-    ---
-    
-    4. positioning_gap:
-       - market_focus: what top results focus on (simple phrase)
-       - product_focus: how the target product is positioned (simple phrase)
-       - gap: what the product is missing compared to top results (very clear, no jargon)
-    
-    ---
-    
-    5. competitor_dominance:
-       - top 2 competitors
-       - frequency (how many LLMs mention them)
-       - reason: what they do better than the target product (specific and concrete)
-    
-    ---
-    
-    6. problems:
-       - max 3 items
-       - each should clearly explain what is holding the product back
-       - simple, direct language (no vague statements)
-    
-    ---
-    
-    7. recommendations:
-       - max 3 items
-       - each should be a clear action to improve visibility
-       - specific and practical
-    
-    ---
-    
-    8. improved_bullets:
-       - exactly 3 bullets
-       - each bullet under 10 words
-       - benefit-driven and aligned with what buyers care about
-    
-    ---
-    
-    Constraints:
-    - Do NOT repeat the same idea across sections
-    - Do NOT restate rankings in text
-    - Keep everything concise
-    - Prefer clarity over completeness
-    - Every output should feel actionable and easy to understand
-    
-    Return JSON only.
-    `;
+You are an e-commerce AI visibility analyst.
+
+Query: "${query}"
+Target product: "${userProduct}"
+
+Here are AI model recommendations:
+${reccomendations.join("\n")}
+
+Your job is to analyze how the target product performs across AI-generated answers.
+
+IMPORTANT:
+- Use ONLY the information present in the recommendations above
+- Do NOT invent features, capabilities, or claims
+- Every point must be grounded in patterns from the data
+- Be specific. Avoid generic phrases like "improve AI", "enhance performance", "better UX"
+- Write in simple, clear language a non-technical user understands
+
+---
+
+Return STRICT JSON with:
+
+1. visibility:
+   - For each LLM:
+     { llm: "...", rank: number | null }
+
+---
+
+2. primary_purchase_driver:
+   - ONE short phrase describing the most repeated buying reason
+   - must be derived from repeated patterns in reasons/keywords
+   - confidence (0–1 based on frequency across models)
+
+---
+
+3. key_drivers:
+   - 3–5 most repeated concrete phrases from:
+     - keywords
+     - reasons
+   - must match actual language from inputs (no abstraction)
+
+---
+
+4. positioning_gap:
+   - market_focus: what top-ranked products emphasize (based on patterns)
+   - product_focus: how the target product is described in inputs
+   - gap: EXACT difference between the two (clear and concrete)
+
+---
+
+5. competitor_dominance:
+   - top 2 competitors
+   - frequency (how many models mention them)
+   - reason:
+     - must reference specific advantages visible in input
+     - explain what they do better than the target product
+
+---
+
+6. problems:
+   - max 3 items
+   - each must:
+     - be specific
+     - reference a missing feature, positioning issue, or weakness
+     - avoid generic language
+
+   ❌ Bad: "needs better AI"
+   ✅ Good: "lacks enterprise workflow automation"
+
+---
+
+7. recommendations:
+   - max 3 items
+   - each must:
+     - directly fix a problem listed above
+     - be concrete and actionable
+     - avoid vague verbs like "improve", "enhance", "optimize"
+
+   ❌ Bad: "improve integrations"
+   ✅ Good: "add native integration with major CRM tools, build a landing page around it and publish case studies in customer service blogs"
+
+---
+
+8. improved_bullets:
+   - exactly 3 bullets
+   - each bullet:
+     - under 10 words
+     - benefit-driven
+     - based on key drivers
+     - NOT generic marketing language
+
+   ❌ Bad: "boost productivity"
+   ✅ Good: "AI routing reduces ticket handling time"
+
+---
+
+Constraints:
+- Do NOT repeat the same idea across sections
+- Do NOT restate rankings in text
+- Use concrete, observable patterns only
+- No generic or filler language
+- Keep everything concise and specific
+
+Return JSON only.
+`;
 };
 
 export const RecommendationAnalyzerSchema: ResponseFormatJSONSchema = {
     type: "json_schema",
     json_schema: {
         name: "recommendation_analyzer",
+        strict: true,
         schema: {
             type: "object",
+            additionalProperties: false,
             properties: {
                 visibility: {
                     type: "array",
                     items: {
                         type: "object",
+                        additionalProperties: false,
                         properties: {
                             llm: { type: "string" },
                             rank: { type: ["number", "null"] }
@@ -117,6 +145,7 @@ export const RecommendationAnalyzerSchema: ResponseFormatJSONSchema = {
                 },
                 primary_purchase_driver: {
                     type: "object",
+                    additionalProperties: false,
                     properties: {
                         driver: { type: "string" },
                         confidence: { type: "number" }
@@ -129,6 +158,7 @@ export const RecommendationAnalyzerSchema: ResponseFormatJSONSchema = {
                 },
                 positioning_gap: {
                     type: "object",
+                    additionalProperties: false,
                     properties: {
                         market_focus: { type: "string" },
                         product_focus: { type: "string" },
@@ -140,6 +170,7 @@ export const RecommendationAnalyzerSchema: ResponseFormatJSONSchema = {
                     type: "array",
                     items: {
                         type: "object",
+                        additionalProperties: false,
                         properties: {
                             name: { type: "string" },
                             frequency: { type: "number" },

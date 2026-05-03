@@ -1,3 +1,4 @@
+import { chatAnthropic } from "./llm/claude.js";
 import { chatGroq } from "./llm/groq.js";
 import { chatOpenai } from "./llm/openai.js";
 import {
@@ -36,6 +37,7 @@ async function runRecommendationProvider(
         sendSseEvent("llm_result", { llm, data });
         return { llm, data };
     } catch (err) {
+        console.error("[runRecommendationProvider]", err);
         const message = err instanceof Error ? err.message : "Unknown error";
         sendSseEvent("llm_error", { llm, message });
         return { llm, data: { results: [] } };
@@ -54,10 +56,11 @@ function parseAnalyzerJson(raw: string | null): RecommendationAnalyzerResponseTy
 const processReccomendation = async (query: string, userProduct: string) => {
     const prompt = generateReccomendationPrompt(query);
     const schema = ReccomendationPromptSchema;
-
+ 
     const reccomendations = await Promise.all([
-        runRecommendationProvider("groq", () => chatGroq(prompt, schema, "openai/gpt-oss-120b")),
-        runRecommendationProvider("openai", () => chatOpenai(prompt, schema, "gpt-4o-mini")),
+        runRecommendationProvider("groq", () => chatGroq(prompt, schema)),
+        runRecommendationProvider("openai", () => chatOpenai(prompt, schema)),
+        runRecommendationProvider("claude", () => chatAnthropic(prompt, schema)),
     ]);
 
     const forAnalyzer = reccomendations.filter((r) => r.data.results.length > 0);
@@ -68,10 +71,10 @@ const processReccomendation = async (query: string, userProduct: string) => {
 
     let analyzerRaw: string | null = null;
     try {
-        analyzerRaw = await chatOpenai(
+        analyzerRaw = await chatAnthropic(
             generateRecommendationAnalyzerPrompt(query, forAnalyzer, userProduct),
             RecommendationAnalyzerSchema,
-            "gpt-4o",
+            "claude-sonnet-4-5",
         );
     } catch (err) {
         const message = err instanceof Error ? err.message : "Unknown error";

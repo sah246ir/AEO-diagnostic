@@ -17,17 +17,37 @@ export const generateReccomendationPrompt = (userInput: string) => {
 };
 
 export const ReccomendationPromptSchema: ResponseFormatJSONSchema = {
-    type: "json_schema",
-    json_schema: {
-        name: "recommendation_prompt",
-        schema: {
+  type: "json_schema",
+  json_schema: {
+    name: "recommendation_prompt",
+    strict: true,
+    schema: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        results: {
+          type: "array",
+          items: {
             type: "object",
+            additionalProperties: false,
             properties: {
-                results: { type: "array", items: { type: "object", properties: { rank: { type: "number" }, name: { type: "string" }, reason: { type: "string" }, product_vibe: { type: "string" }, keywords: { type: "array", items: { type: "string" } } } } }
-            }
+              rank: { type: "number" },
+              name: { type: "string" },
+              reason: { type: "string" },
+              product_vibe: { type: "string" },
+              keywords: {
+                type: "array",
+                items: { type: "string" }
+              }
+            },
+            required: ["rank", "name", "reason", "product_vibe", "keywords"]
+          }
         }
+      },
+      required: ["results"]
     }
-}
+  }
+};
 
 export type ReccomendationPromptResponseType = {
     results: {
