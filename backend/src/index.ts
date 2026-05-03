@@ -31,7 +31,6 @@ app.post("/analyze", (req, res) => {
 app.get("/sse", (_req, res) => {
     registerSseConnection(res)
 })
-
-app.listen(port, () => {
-    console.log(`Listening on http://localhost:${port}`)
-})
+app.listen(port, "0.0.0.0", () => {
+    console.log("Server running on", port);
+  });
