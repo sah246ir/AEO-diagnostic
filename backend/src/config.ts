@@ -1,24 +1,20 @@
 import dotenv from "dotenv";
 dotenv.config();
 import OpenAI from "openai";
-
-// const openaiClient = new OpenAI({
-//     apiKey: process.env.OPENAI_API_KEY,
-// });
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const groqClient = new OpenAI({
     apiKey: process.env.GROQ_API_KEY,
     baseURL: "https://api.groq.com/openai/v1",
 });
 
-// const geminiClient = new OpenAI({
-//     apiKey: process.env.GEMINI_API_KEY,
-//     baseURL: "https://api.gemini.com/v1",
-// });
+const openaiClient = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+});
 
-// const anthropicClient = new OpenAI({
-//     apiKey: process.env.ANTHROPIC_API_KEY,
-//     baseURL: "https://api.anthropic.com/v1",
-// });
+const deepseekClient = new OpenAI({
+    apiKey: process.env.DEEPSEEK_API_KEY,
+    baseURL: "https://api.deepseek.com/v1",
+  });
 
-export { groqClient };
+export { groqClient, openaiClient, deepseekClient };

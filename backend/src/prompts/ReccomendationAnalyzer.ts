@@ -24,46 +24,74 @@ export const generateRecommendationAnalyzerPrompt = (
     Here are AI model recommendations:
     ${reccomendations.join("\n")}
     
+    Your job is to analyze how the target product performs across AI-generated answers.
+    
+    IMPORTANT:
+    Write outputs in simple, clear language. Avoid jargon. Every field should be easy for a non-technical user to understand.
+    
+    ---
+    
     Return STRICT JSON with:
     
     1. visibility:
-       - For each LLM, return:
+       - For each LLM:
          { llm: "...", rank: number | null }
     
+    ---
+    
     2. primary_purchase_driver:
-       - dominant buying intent
-       - confidence (0–1)
+       - dominant buying factor (1 short phrase, plain English)
+       - confidence (0–1 based on how often it appears)
+    
+    ---
     
     3. key_drivers:
-       - top repeated benefits / keywords
+       - most repeated benefits or keywords across results
+       - short phrases only
+    
+    ---
     
     4. positioning_gap:
-       - market_focus
-       - product_focus
-       - gap
+       - market_focus: what top results focus on (simple phrase)
+       - product_focus: how the target product is positioned (simple phrase)
+       - gap: what the product is missing compared to top results (very clear, no jargon)
+    
+    ---
     
     5. competitor_dominance:
-       - top 2 competitors + frequency + reason
+       - top 2 competitors
+       - frequency (how many LLMs mention them)
+       - reason: what they do better than the target product (specific and concrete)
+    
+    ---
     
     6. problems:
-       - specific issues
+       - max 3 items
+       - each should clearly explain what is holding the product back
+       - simple, direct language (no vague statements)
+    
+    ---
     
     7. recommendations:
-       - actionable fixes
+       - max 3 items
+       - each should be a clear action to improve visibility
+       - specific and practical
+    
+    ---
     
     8. improved_bullets:
-       - 3 better bullets
+       - exactly 3 bullets
+       - each bullet under 10 words
+       - benefit-driven and aligned with what buyers care about
+    
+    ---
     
     Constraints:
-    - Do NOT repeat rankings in text
-    - Be concise
-    - Use data from inputs
-    - problems: max 3 items
-    - recommendations: max 3 items
-    - do not repeat the same idea across sections
-    - each point must be unique
-    - keep each bullet under 10 words
-    - the reason for competitor_dominance should mention what this company is doing better than me
+    - Do NOT repeat the same idea across sections
+    - Do NOT restate rankings in text
+    - Keep everything concise
+    - Prefer clarity over completeness
+    - Every output should feel actionable and easy to understand
     
     Return JSON only.
     `;

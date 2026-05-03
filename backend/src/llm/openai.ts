@@ -1,12 +1,12 @@
 import { ResponseFormatJSONSchema } from "openai/resources";
-import { groqClient } from "../config.js";
+import { openaiClient } from "../config.js";
 
-export const chatGroq = async (
+export const chatOpenai = async (
     prompt: string,
     responseFormat: ResponseFormatJSONSchema,
-    model = "openai/gpt-oss-120b",
+    model = "gpt-4o-mini",
 ) => {
-    const response = await groqClient.chat.completions.create({
+    const response = await openaiClient.chat.completions.create({
         model,
         messages: [{ role: "user", content: prompt }],
         response_format: responseFormat,
